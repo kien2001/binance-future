@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+skills/
+skill-creator/
+AGENTS.md
+# Environment variables (Sensitive)
+.env
+
+# IDEs
+.vscode/
+.idea/
+.project
+.pydevproject
+.settings/
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Docker
+.dockerignore
+
+# AI Agent Artifacts (Keep repo clean)
+.gemini/
+.antigravity/
+task.md
+implementation_plan.md
+walkthrough.md
+test_api.py
+
+# Data
+.tmp/
+*.log
