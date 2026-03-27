@@ -193,6 +193,29 @@
       border-color: var(--accent);
       background: rgba(240,185,11,0.03);
     }
+    #style-select {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      font-family: var(--font);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      outline: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%239aaabb' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: calc(100% - 12px) center;
+      padding-right: 36px;
+      min-width: 140px;
+    }
+    #style-select:hover { border-color: var(--text-muted); }
+    #style-select:focus { border-color: var(--accent); background-color: rgba(240,185,11,0.03); }
+
     #analyze-btn {
       background: var(--accent);
       color: #0b0e14;
@@ -577,6 +600,11 @@
         spellcheck="false"
       />
     </div>
+    <select id="style-select">
+      <option value="Scalper">⚡ Scalper</option>
+      <option value="Swing" selected>📊 Swing Trader</option>
+      <option value="Conservative">🛡️ Conservative</option>
+    </select>
     <button id="analyze-btn">
       <div class="btn-spinner"></div>
       <span class="btn-text">⚡ Analyze</span>
@@ -826,11 +854,19 @@
 
       const hist = parseFloat(d.MACD_histogram);
       const histClass = hist > 0 ? 'green' : 'red';
+      
+      const atr = parseFloat(d.ATR_14);
+      const buyRat = parseFloat(d.Buy_Vol_Ratio);
+      const volStyle = d.Volume > d.Volume_SMA_20 ? 'color: var(--long)' : 'color: var(--text-muted)';
+      const buyClass = buyRat > 0.5 ? 'green' : 'red';
 
       el.innerHTML = `
         <div class="ind-row"><span class="ind-name">Price</span><span class="ind-val">${fmtPrice(d.price)}</span></div>
         <div class="ind-row"><span class="ind-name">24h Change</span><span class="ind-val ${d.change_24h >= 0 ? 'green' : 'red'}">${d.change_24h >= 0 ? '+' : ''}${d.change_24h}%</span></div>
         <div class="ind-row"><span class="ind-name">RSI (14)</span><span class="ind-val ${rsiClass}">${fmt(rsi, 2)}</span></div>
+        <div class="ind-row"><span class="ind-name">ATR (14)</span><span class="ind-val">${fmtPrice(atr)}</span></div>
+        <div class="ind-row"><span class="ind-name">Volume / SMA(20)</span><span class="ind-val" style="${volStyle}">${fmt(d.Volume, 2)} / ${fmt(d.Volume_SMA_20, 2)}</span></div>
+        <div class="ind-row"><span class="ind-name">Buy Vol Ratio</span><span class="ind-val ${buyClass}">${fmt(buyRat * 100, 2)}%</span></div>
         <div class="ind-row"><span class="ind-name">MACD Line</span><span class="ind-val">${fmt(d.MACD_line, 4)}</span></div>
         <div class="ind-row"><span class="ind-name">MACD Signal</span><span class="ind-val">${fmt(d.MACD_signal, 4)}</span></div>
         <div class="ind-row"><span class="ind-name">MACD Histogram</span><span class="ind-val ${histClass}">${fmt(hist, 4)}</span></div>
@@ -862,13 +898,14 @@
       return;
     }
 
+    const style = document.getElementById('style-select').value;
     showLoading();
 
     try {
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symbol })
+        body: JSON.stringify({ symbol, style })
       });
 
       if (!res.ok) {

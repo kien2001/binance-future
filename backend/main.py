@@ -35,6 +35,7 @@ TIMEFRAMES = ["15m", "1h", "4h", "1d"]
 
 class AnalyzeRequest(BaseModel):
     symbol: str
+    style: str = "Swing"
 
 
 @app.get("/")
@@ -50,6 +51,7 @@ def health():
 @app.post("/api/analyze")
 def analyze(req: AnalyzeRequest):
     symbol = req.symbol.upper().strip().replace("/", "").replace("-", "")
+    style  = req.style
 
     try:
         # --- Global market metrics ---
@@ -80,7 +82,7 @@ def analyze(req: AnalyzeRequest):
         }
 
         # --- Call Gemini ---
-        signal = get_trading_signal(market_data)
+        signal = get_trading_signal(market_data, style)
 
         # Return both signal and raw market data for the frontend to display
         signal["market_data"] = market_data

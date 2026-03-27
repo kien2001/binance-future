@@ -17,7 +17,7 @@ def get_klines(symbol: str, interval="1h", limit=200) -> pd.DataFrame:
         "close_time", "quote_asset_volume", "num_trades",
         "taker_base_vol", "taker_quote_vol", "ignore"
     ])
-    for col in ["open", "high", "low", "close", "volume"]:
+    for col in ["open", "high", "low", "close", "volume", "taker_base_vol"]:
         df[col] = df[col].astype(float)
     return df
 
