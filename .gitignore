@@ -41,3 +41,8 @@ test_api.py
 # Data
 .tmp/
 *.log
+
+# Database
+*.db
+*.sqlite3
+trading_journal.db

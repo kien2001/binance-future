@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  alphatrader-bot:
+    build: .
+    container_name: alphatrader_pro
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/.env:/app/backend/.env
+      - ./trading_journal.db:/app/trading_journal.db
+    environment:
+      - PYTHONUNBUFFERED=1

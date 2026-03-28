@@ -2,7 +2,7 @@ import pandas as pd
 import ta
 
 
-def compute_indicators(df: pd.DataFrame) -> dict:
+def compute_indicators(df: pd.DataFrame, include_series: bool = False) -> dict:
     """
     Compute technical indicators from a klines DataFrame.
     Requires at least 200 rows for EMA200 to be valid.
@@ -22,8 +22,11 @@ def compute_indicators(df: pd.DataFrame) -> dict:
     macd_hist   = macd_obj.macd_diff().iloc[-1]
 
     # EMA
-    ema50  = ta.trend.EMAIndicator(close, window=50).ema_indicator().iloc[-1]
-    ema200 = ta.trend.EMAIndicator(close, window=200).ema_indicator().iloc[-1]
+    ema50_series = ta.trend.EMAIndicator(close, window=50).ema_indicator()
+    ema200_series = ta.trend.EMAIndicator(close, window=200).ema_indicator()
+    
+    ema50  = ema50_series.iloc[-1]
+    ema200 = ema200_series.iloc[-1]
 
     # ATR (Volatility)
     atr = ta.volatility.AverageTrueRange(high=high, low=low, close=close, window=14).average_true_range().iloc[-1]
@@ -47,7 +50,7 @@ def compute_indicators(df: pd.DataFrame) -> dict:
         except Exception:
             return None
 
-    return {
+    result = {
         "price":          safe_round(close.iloc[-1], 6),
         "RSI_14":         safe_round(rsi, 2),
         "MACD_line":      safe_round(macd_line, 6),
@@ -60,3 +63,18 @@ def compute_indicators(df: pd.DataFrame) -> dict:
         "Volume_SMA_20":  safe_round(vol_sma, 2),
         "Buy_Vol_Ratio":  safe_round(buy_vol_ratio, 4),
     }
+
+    if include_series:
+        chart_series = []
+        for i in range(len(df)):
+            ts = int(df["timestamp"].iloc[i] / 1000)
+            e50 = safe_round(ema50_series.iloc[i], 6)
+            e200 = safe_round(ema200_series.iloc[i], 6)
+            # Lightweight charts line series requires {time, value} items, without NaN
+            item = {"time": ts}
+            if e50 is not None: item["ema50"] = e50
+            if e200 is not None: item["ema200"] = e200
+            chart_series.append(item)
+        result["chart_series"] = chart_series
+        
+    return result
